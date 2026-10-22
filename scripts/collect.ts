@@ -1,4 +1,4 @@
-// 수집 실행: 출처 15곳에서 새 자료를 가져와 저장하고, 실행 기록(runs)을 남긴다.
+// 수집 실행: 출처 목록(config/sources.json)에서 새 자료를 가져와 저장하고, 실행 기록(runs)을 남긴다.
 // 실행: npm run collect                       (실제 저장)
 //       npm run collect -- --dry-run          (저장하지 않고 읽기만)
 //       npm run collect -- --as-of=2026-10-20T09:00:00+09:00   (그 시각까지 공개된 글만)

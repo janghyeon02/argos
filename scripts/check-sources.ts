@@ -1,4 +1,4 @@
-// 출처 15곳에 실제로 접속되는지 확인한다.
+// 출처 목록(config/sources.json)의 모든 출처에 실제로 접속되는지 확인한다.
 // Design Ref: §5 — 출처마다 응답 코드, RSS 여부, 글 수를 보여준다. 수집은 하지 않는다.
 // 실행: npm run check:sources
 
