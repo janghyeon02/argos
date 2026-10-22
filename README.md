@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 아르고스 (Argos) — 글로벌 리스크 조기경보 AI 비서
 
-## Getting Started
+> 투자 권유가 아닌 참고 정보입니다.
 
-First, run the development server:
+국내외 공식 발표·통신사·주요 언론을 1시간마다 모아 같은 사건끼리 **이슈 카드**로 묶고,
+**영향도·가능성·속도** 세 축으로 점수를 매겨 **관심 · 주의 · 경계 · 심각** 4단계로 판정합니다.
+'경계' 이상이 되면 **기본·악화·극단 시나리오**와 갈림길 신호를 만들고, 텔레그램으로 3줄 브리핑을 보냅니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+뉴스는 매일 쏟아지지만 "지금 내 돈과 한국 경제에 중요한 일이 무엇인지"는 알기 어렵습니다.
+아르고스는 개인 투자자와 실무자가 큰 위험을 **남들보다 몇 시간 먼저** 알아차리도록 돕는 것을 목표로 합니다.
+
+## 주요 기능
+
+| 기능 | 내용 |
+|---|---|
+| 자료 수집 | 46개 출처(공식 발표 7 · 국내외 주요 언론 36 · 기타 3)의 RSS·공개 페이지를 읽고, 14일 넘은 글은 뺍니다 |
+| 요약·카더라 판정 | 자료마다 한국어 요약을 만들고, 출처가 불분명한 내용은 "(카더라)"로 표시해 점수 근거에서 뺍니다 |
+| 이슈 묶기 | 글 뜻이 가까운 이슈 후보만 AI에 보여 주고, 확신도 0.7 · 글 뜻 유사도 0.3 이상일 때만 같은 이슈로 묶습니다 |
+| 점수·등급 | 평가 기준표(`rubric/v1.md`)로 5번 평가한 중앙값을 쓰고, 축마다 근거 링크를 남깁니다 |
+| 시나리오 | '경계' 이상 이슈에 기본·악화·극단 시나리오, 확률, 갈림길 신호, 한국 영향, 확인할 일을 만듭니다 |
+| 텔레그램 알림 | 신규·상향·신호 발생 시 3줄 브리핑을 보내고, 같은 등급 재알림 대기·야간 보류 규칙을 지킵니다 |
+| 과거 사례 검증 | 2022 영국 미니 예산, 2023 SVB, 2024 비상계엄, 2025 상호관세를 "그 시점까지 공개된 기사만으로" 다시 돌려 경보가 언제 울렸을지 잽니다 |
+| 화면 | 비밀번호 로그인, 등급별 이슈 목록, 이슈 상세(점수 근거·시나리오·타임라인), 과거 사례 검증 결과 표 |
+
+## 점수 방식 한눈에 보기
+
+- **영향도(0~100):** 금리·환율·주가·원자재·공급망·한국 수출 등 영향 경로별 점수로 계산
+- **가능성(0~100):** 압력 신호 + 예정된 일정 + 확인된 신호
+- **속도(0~100):** 최근 6시간 기사량을 지난 7일 평균과 비교
+- **종합 점수** = 영향도 × max(가능성, 속도) ÷ 100 → 등급 판정
+- 공식 발표나 주요 언론 근거가 없으면 '경계' 아래로 묶어 두고, 하향은 두 번 연속일 때만 합니다.
+
+규칙에 쓰이는 숫자는 모두 [`lib/config/rules.ts`](lib/config/rules.ts) 한 곳에 모여 있습니다.
+
+## 기술 스택
+
+| 구분 | 사용 기술 |
+|---|---|
+| 화면·서버 | Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 |
+| 저장 | Supabase(Postgres) · Drizzle ORM |
+| AI 분석 | OpenAI `gpt-4o-mini` (요약·묶기·점수·시나리오), `text-embedding-3-small` (글 뜻 비교) |
+| 알림 | 텔레그램 봇 API |
+| 과거 검증 자료 | GDELT (무료 뉴스 기록) |
+| 배포 | Vercel |
+
+## 폴더 구조
+
+```
+app/              화면 (이슈 목록·상세, 로그인, 과거 사례 검증)
+lib/config/       규칙 숫자, 출처 목록, 과거 사례 설정
+lib/pipeline/     수집 → 요약 → 묶기 → 점수 → 시나리오 → 알림, 과거 사례 검증
+lib/db/           데이터베이스 표 정의와 접속
+config/           출처 46곳 목록 (sources.json)
+rubric/           평가 기준표 v1
+data/backtest/    과거 사례 정의 (cases.json)
+scripts/          단계별 실행 스크립트
+drizzle/          데이터베이스 변경 기록
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 직접 실행해 보기
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run db:migrate      # 데이터베이스 표 만들기
+npm run collect         # 자료 수집
+npm run enrich          # 요약·카더라 판정
+npm run cluster         # 이슈 묶기
+npm run score           # 점수·등급
+npm run scenario        # 시나리오·텔레그램 알림
+npm run dev             # 화면 보기 (http://localhost:3000)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env` 파일에 아래 이름의 값이 필요합니다(값은 저장소에 올리지 않습니다).
 
-## Learn More
+| 이름 | 쓰임 |
+|---|---|
+| `DATABASE_URL` | Supabase 접속 주소 |
+| `OPENAI_API_KEY` | AI 분석 (수집·분석 스크립트) |
+| `SITE_PASSWORD`, `SESSION_SECRET` | 화면 로그인과 로그인 유지 |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | 텔레그램 알림 |
 
-To learn more about Next.js, take a look at the following resources:
+## 진행 상황
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+이 저장소는 포트폴리오 프로젝트로 개발 중입니다. 자세한 진행 현황은 [`PLAN.md`](PLAN.md)의 "진행 현황" 표에 있습니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- ✅ 수집·요약·이슈 묶기·점수·시나리오·텔레그램 알림·화면·과거 사례 검증 틀
+- ⏳ 과거 사례 검증 실행, 정정 기사 반영 재채점
+- ⬜ 1시간마다 자동 실행(GitHub Actions), 보관 화면, 피드백, 평가 기준표 주간 개선
 
-## Deploy on Vercel
+## 문서
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [`PRD.md`](PRD.md) — 무엇을 왜 만드는지 (요구사항)
+- [`PLAN.md`](PLAN.md) — 만드는 순서와 진행 현황
+- [`DESIGN.md`](DESIGN.md) — 화면·데이터 흐름·데이터 모델 설계
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+아르고스가 보여 주는 등급·시나리오·브리핑은 공개 자료를 AI로 정리한 **참고 정보**이며, 투자 권유나 매매 신호가 아닙니다.
