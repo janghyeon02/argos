@@ -191,6 +191,9 @@ export const scores = pgTable(
     impact: real("impact").notNull(),
     likelihood: real("likelihood").notNull(),
     velocity: real("velocity").notNull(),
+    /** 5번 평가 각각의 영향도·가능성 (다시 계산할 때 그대로 쓰기 위해) */
+    impactRuns: jsonb("impact_runs").$type<number[]>(),
+    likelihoodRuns: jsonb("likelihood_runs").$type<number[]>(),
     /** 5번 평가 각각의 종합 점수 */
     compositeRuns: jsonb("composite_runs").$type<number[]>(),
     composite: real("composite").notNull(),

@@ -142,3 +142,50 @@ export function similarity(a: number[], b: number[]): number {
   }
   return dot / Math.sqrt(normA * normB);
 }
+
+/**
+ * 같은 질문에 대한 답을 count개 받는다 (점수 5번 평가용).
+ * 한 번의 요청으로 여러 답을 받아 입력 비용은 한 번만 낸다. 형식에 맞지 않는 답은 빼고, 모자라면 모자란 수만큼 다시 묻는다.
+ */
+export async function askJsonSamples<S extends z.ZodType>(
+  options: AskJsonOptions<S>,
+  count: number,
+): Promise<{ data: z.infer<S>[]; usage: { inputTokens: number; outputTokens: number } }> {
+  const { tier, system, prompt, schema, schemaName = "answer", maxTokens = 4000 } = options;
+  const usage = { inputTokens: 0, outputTokens: 0 };
+  const data: z.infer<S>[] = [];
+  let lastProblem = "";
+
+  for (let attempt = 1; attempt <= 1 + RULES.ai.maxRetries && data.length < count; attempt++) {
+    let completion;
+    try {
+      completion = await getClient().chat.completions.parse({
+        model: MODELS[tier],
+        max_completion_tokens: maxTokens,
+        n: count - data.length,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: prompt },
+        ],
+        response_format: zodResponseFormat(schema, schemaName),
+      });
+    } catch (error) {
+      if (error instanceof OpenAI.APIError) throw error;
+      lastProblem = error instanceof Error ? error.message : String(error);
+      continue;
+    }
+    usage.inputTokens += completion.usage?.prompt_tokens ?? 0;
+    usage.outputTokens += completion.usage?.completion_tokens ?? 0;
+    for (const choice of completion.choices) {
+      if (choice.message.refusal) throw new AiTaskError(`모델이 요청을 거절했습니다: ${choice.message.refusal}`, "refusal", attempt);
+      const checked = schema.safeParse(choice.message.parsed);
+      if (checked.success) data.push(checked.data);
+      else lastProblem = checked.error.issues.map((issue) => `${issue.path.join(".") || "(전체)"}: ${issue.message}`).join("; ");
+    }
+  }
+
+  if (data.length < count) {
+    throw new AiTaskError(`형식에 맞는 답을 ${count}개 받지 못했습니다 (${data.length}개) — ${lastProblem}`, "format", 1 + RULES.ai.maxRetries);
+  }
+  return { data, usage };
+}
