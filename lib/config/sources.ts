@@ -8,7 +8,7 @@ const SourceSchema = z.object({
   /** 데이터베이스 sources 표의 키 (영문 소문자·숫자·밑줄) */
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string().min(1),
-  /** 1: 공식 발표, 2: 통신사·연구기관, 3: 일반 미디어 */
+  /** 1: 공식 발표, 2: 통신사·연구기관·주요 경제지, 3: 일반 미디어 */
   tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   /** rss: RSS 읽기, page: 목록 페이지 읽기 */
   method: z.enum(["rss", "page"]),

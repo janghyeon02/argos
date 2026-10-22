@@ -6,7 +6,7 @@
 export const GRADES = ["관심", "주의", "경계", "심각"] as const;
 export type Grade = (typeof GRADES)[number];
 
-/** 출처 신뢰도 등급 — 1: 공식 발표, 2: 통신사·연구기관, 3: 일반 미디어 (PRD 5번 Must① 규칙 1) */
+/** 출처 신뢰도 등급 — 1: 공식 발표, 2: 통신사·연구기관·주요 경제지, 3: 일반 미디어 (PRD 5번 Must① 규칙 1) */
 export type SourceTier = 1 | 2 | 3;
 
 /** 영향도를 보는 한국 유입 6개 경로 (PRD 3-2) */

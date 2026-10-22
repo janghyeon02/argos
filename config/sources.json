@@ -126,6 +126,19 @@
       "minIntervalHours": 6
     },
     {
+      "id": "mk",
+      "name": "매일경제",
+      "tier": 2,
+      "method": "rss",
+      "language": "ko",
+      "urls": [
+        "https://www.mk.co.kr/rss/30100041/",
+        "https://www.mk.co.kr/rss/30300018/",
+        "https://www.mk.co.kr/rss/30200030/"
+      ],
+      "access": "공식 RSS (경제·국제·정치). 주요 경제지로 2등급. robots.txt는 일반 수집기를 허용하고 AI 학습용 봇만 막으므로 제목·링크·짧은 발췌만 쓴다"
+    },
+    {
       "id": "bbc",
       "name": "BBC",
       "tier": 3,
@@ -169,19 +182,6 @@
         "https://www.aljazeera.com/xml/rss/all.xml"
       ],
       "access": "공식 RSS (AP 대체: AP는 공개 RSS 없음)"
-    },
-    {
-      "id": "mk",
-      "name": "매일경제",
-      "tier": 3,
-      "method": "rss",
-      "language": "ko",
-      "urls": [
-        "https://www.mk.co.kr/rss/30100041/",
-        "https://www.mk.co.kr/rss/30300018/",
-        "https://www.mk.co.kr/rss/30200030/"
-      ],
-      "access": "공식 RSS (경제·국제·정치). robots.txt는 일반 수집기를 허용하고 AI 학습용 봇만 막으므로 제목·링크·짧은 발췌만 쓴다"
     }
   ]
 }
