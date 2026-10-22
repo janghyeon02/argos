@@ -12,8 +12,8 @@ const SourceSchema = z.object({
   tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   /** rss: RSS 읽기, page: 목록 페이지 읽기 */
   method: z.enum(["rss", "page"]),
-  /** 원문 언어 — PRD 6번: 영어·한국어만 */
-  language: z.enum(["en", "ko"]),
+  /** 원문 언어 — PRD 6번: 영어·한국어, 그리고 OECD 주요국(G7) 현지어(일본어·독일어·프랑스어·이탈리아어) */
+  language: z.enum(["en", "ko", "ja", "de", "fr", "it"]),
   /** 매체가 속한 나라·지역 — 현지에서 먼저 크게 다루는 이슈를 지역별로 보기 위해 */
   region: z.string().min(1),
   urls: z.array(z.url()).min(1),

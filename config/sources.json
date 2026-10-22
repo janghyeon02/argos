@@ -395,6 +395,139 @@
       "region": "중동"
     },
     {
+      "id": "nhk",
+      "name": "NHK(경제·국제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "ja",
+      "region": "일본",
+      "urls": [
+        "https://www.nhk.or.jp/rss/news/cat5.xml",
+        "https://www.nhk.or.jp/rss/news/cat6.xml"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (일본 공영방송, 일본어)"
+    },
+    {
+      "id": "asahi",
+      "name": "아사히신문(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "ja",
+      "region": "일본",
+      "urls": [
+        "https://www.asahi.com/rss/asahi/business.rdf"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (일본어)"
+    },
+    {
+      "id": "tagesschau",
+      "name": "타게스샤우(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "de",
+      "region": "독일",
+      "urls": [
+        "https://www.tagesschau.de/wirtschaft/index~rss2.xml"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (독일 공영방송, 독일어)"
+    },
+    {
+      "id": "handelsblatt",
+      "name": "한델스블라트",
+      "tier": 2,
+      "method": "rss",
+      "language": "de",
+      "region": "독일",
+      "urls": [
+        "https://www.handelsblatt.com/contentexport/feed/schlagzeilen"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (독일 대표 경제지, 독일어)"
+    },
+    {
+      "id": "faz",
+      "name": "프랑크푸르터 알게마이네(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "de",
+      "region": "독일",
+      "urls": [
+        "https://www.faz.net/rss/aktuell/wirtschaft/"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (독일어)"
+    },
+    {
+      "id": "lemonde",
+      "name": "르몽드(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "fr",
+      "region": "프랑스",
+      "urls": [
+        "https://www.lemonde.fr/economie/rss_full.xml"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (프랑스어)"
+    },
+    {
+      "id": "franceinfo",
+      "name": "프랑스앵포(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "fr",
+      "region": "프랑스",
+      "urls": [
+        "https://www.francetvinfo.fr/economie.rss"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (프랑스 공영방송, 프랑스어)"
+    },
+    {
+      "id": "ansa",
+      "name": "ANSA 통신(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "it",
+      "region": "이탈리아",
+      "urls": [
+        "https://www.ansa.it/sito/notizie/economia/economia_rss.xml"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (이탈리아 대표 통신사, 이탈리아어)"
+    },
+    {
+      "id": "sole24ore",
+      "name": "일 솔레 24 오레(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "it",
+      "region": "이탈리아",
+      "urls": [
+        "https://www.ilsole24ore.com/rss/economia.xml"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (이탈리아 대표 경제지, 이탈리아어)"
+    },
+    {
+      "id": "cbc",
+      "name": "CBC(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "캐나다",
+      "urls": [
+        "https://www.cbc.ca/webfeed/rss/rss-business"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (캐나다 공영방송)"
+    },
+    {
+      "id": "abc_au",
+      "name": "ABC 호주(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "호주",
+      "urls": [
+        "https://www.abc.net.au/news/feed/51892/rss.xml"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만 (호주 공영방송)"
+    },
+    {
       "id": "arab_news",
       "name": "아랍뉴스",
       "tier": 3,
