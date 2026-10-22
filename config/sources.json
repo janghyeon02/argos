@@ -10,7 +10,8 @@
       "urls": [
         "https://www.federalreserve.gov/feeds/press_all.xml"
       ],
-      "access": "공식 RSS"
+      "access": "공식 RSS",
+      "region": "미국"
     },
     {
       "id": "ecb",
@@ -21,7 +22,8 @@
       "urls": [
         "https://www.ecb.europa.eu/rss/press.html"
       ],
-      "access": "공식 RSS"
+      "access": "공식 RSS",
+      "region": "유럽"
     },
     {
       "id": "boe",
@@ -32,7 +34,8 @@
       "urls": [
         "https://www.bankofengland.co.uk/rss/news"
       ],
-      "access": "공식 RSS"
+      "access": "공식 RSS",
+      "region": "유럽"
     },
     {
       "id": "bis",
@@ -43,7 +46,8 @@
       "urls": [
         "https://www.bis.org/doclist/all_pressrels.rss"
       ],
-      "access": "공식 RSS (IMF 대체: IMF는 자동 접근 차단)"
+      "access": "공식 RSS (IMF 대체: IMF는 자동 접근 차단)",
+      "region": "국제"
     },
     {
       "id": "whitehouse",
@@ -54,7 +58,8 @@
       "urls": [
         "https://www.whitehouse.gov/news/feed/"
       ],
-      "access": "공식 RSS, robots.txt 일반 수집 허용"
+      "access": "공식 RSS, robots.txt 일반 수집 허용",
+      "region": "미국"
     },
     {
       "id": "bok",
@@ -65,7 +70,8 @@
       "urls": [
         "https://www.bok.or.kr/portal/bbs/B0000338/news.rss"
       ],
-      "access": "공식 RSS"
+      "access": "공식 RSS",
+      "region": "국내"
     },
     {
       "id": "moef",
@@ -76,7 +82,8 @@
       "urls": [
         "https://www.moef.go.kr/com/detailRssTagService.do?bbsId=MOSFBBS_000000000028"
       ],
-      "access": "공식 RSS(보도자료), robots.txt 일반 수집 허용"
+      "access": "공식 RSS(보도자료), robots.txt 일반 수집 허용",
+      "region": "국내"
     },
     {
       "id": "yonhap",
@@ -88,7 +95,8 @@
         "https://www.yna.co.kr/rss/news.xml",
         "https://www.yna.co.kr/rss/economy.xml"
       ],
-      "access": "공식 RSS (전체 최신·경제)"
+      "access": "공식 RSS (전체 최신·경제)",
+      "region": "국내"
     },
     {
       "id": "yonhap_en",
@@ -99,31 +107,34 @@
       "urls": [
         "https://en.yna.co.kr/RSS/news.xml"
       ],
-      "access": "공식 RSS (로이터 대체: 로이터는 공개 RSS 없음)"
+      "access": "공식 RSS (로이터 대체: 로이터는 공개 RSS 없음)",
+      "region": "국내"
     },
     {
-      "id": "kdi",
-      "name": "한국개발연구원(KDI)",
+      "id": "newsis",
+      "name": "뉴시스",
       "tier": 2,
-      "method": "page",
+      "method": "rss",
       "language": "ko",
+      "region": "국내",
       "urls": [
-        "https://www.kdi.re.kr/research/reportList"
+        "https://www.newsis.com/RSS/sokbo.xml",
+        "https://www.newsis.com/RSS/economy.xml",
+        "https://www.newsis.com/RSS/international.xml"
       ],
-      "access": "RSS 주소가 글 목록이 아닌 설정 파일만 돌려줘서 연구보고서 목록 페이지 읽기. robots.txt 전체 허용 (국제금융센터 대체: robots.txt가 검색엔진 외 수집을 막음)",
-      "minIntervalHours": 6
+      "access": "공식 RSS (속보·경제·국제), robots.txt 허용"
     },
     {
-      "id": "kiep",
-      "name": "대외경제정책연구원(KIEP)",
+      "id": "einfomax",
+      "name": "연합인포맥스",
       "tier": 2,
-      "method": "page",
+      "method": "rss",
       "language": "ko",
+      "region": "국내",
       "urls": [
-        "https://www.kiep.go.kr/gallery.es?mid=a10101010000&bid=0001"
+        "https://news.einfomax.co.kr/rss/allArticle.xml"
       ],
-      "access": "RSS 없음, 발간물 목록 페이지 읽기. robots.txt는 일반 수집기를 막지 않지만 AI 학습용 봇은 막으므로 제목·링크·짧은 발췌만 쓰고 하루 몇 번 이하로 읽는다",
-      "minIntervalHours": 6
+      "access": "공식 RSS (금융시장 전문 통신), robots.txt 허용"
     },
     {
       "id": "mk",
@@ -136,52 +147,288 @@
         "https://www.mk.co.kr/rss/30300018/",
         "https://www.mk.co.kr/rss/30200030/"
       ],
-      "access": "공식 RSS (경제·국제·정치). 주요 경제지로 2등급. robots.txt는 일반 수집기를 허용하고 AI 학습용 봇만 막으므로 제목·링크·짧은 발췌만 쓴다"
+      "access": "공식 RSS (경제·국제·정치). 주요 경제지로 2등급. robots.txt는 일반 수집기를 허용하고 AI 학습용 봇만 막으므로 제목·링크·짧은 발췌만 쓴다",
+      "region": "국내"
+    },
+    {
+      "id": "hankyung",
+      "name": "한국경제",
+      "tier": 2,
+      "method": "rss",
+      "language": "ko",
+      "urls": [
+        "https://www.hankyung.com/feed/all-news"
+      ],
+      "access": "공식 RSS (전체). 주요 경제지로 2등급",
+      "region": "국내"
+    },
+    {
+      "id": "edaily",
+      "name": "이데일리",
+      "tier": 2,
+      "method": "rss",
+      "language": "ko",
+      "region": "국내",
+      "urls": [
+        "http://rss.edaily.co.kr/economy_news.xml"
+      ],
+      "access": "공식 RSS (경제), robots.txt 허용"
+    },
+    {
+      "id": "kdi",
+      "name": "한국개발연구원(KDI)",
+      "tier": 2,
+      "method": "page",
+      "language": "ko",
+      "urls": [
+        "https://www.kdi.re.kr/research/reportList"
+      ],
+      "access": "RSS 주소가 글 목록이 아닌 설정 파일만 돌려줘서 연구보고서 목록 페이지 읽기. robots.txt 전체 허용 (국제금융센터 대체: robots.txt가 검색엔진 외 수집을 막음)",
+      "minIntervalHours": 6,
+      "region": "국내"
+    },
+    {
+      "id": "kiep",
+      "name": "대외경제정책연구원(KIEP)",
+      "tier": 2,
+      "method": "page",
+      "language": "ko",
+      "urls": [
+        "https://www.kiep.go.kr/gallery.es?mid=a10101010000&bid=0001"
+      ],
+      "access": "RSS 없음, 발간물 목록 페이지 읽기. robots.txt는 일반 수집기를 막지 않지만 AI 학습용 봇은 막으므로 제목·링크·짧은 발췌만 쓰고 하루 몇 번 이하로 읽는다",
+      "minIntervalHours": 6,
+      "region": "국내"
+    },
+    {
+      "id": "cnbc",
+      "name": "CNBC",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+        "https://www.cnbc.com/id/100727362/device/rss/rss.html"
+      ],
+      "access": "공식 RSS (주요·세계). 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만",
+      "region": "미국"
+    },
+    {
+      "id": "bloomberg",
+      "name": "블룸버그(시장)",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "미국",
+      "urls": [
+        "https://feeds.bloomberg.com/markets/news.rss"
+      ],
+      "access": "공식 RSS 제목·요약만 (본문은 유료), 피드 주소에 수집 제한 없음"
+    },
+    {
+      "id": "nyt",
+      "name": "뉴욕타임스(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "미국",
+      "urls": [
+        "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"
+      ],
+      "access": "공식 RSS 제목·요약만, 피드 주소에 수집 제한 없음"
     },
     {
       "id": "bbc",
       "name": "BBC",
-      "tier": 3,
+      "tier": 2,
       "method": "rss",
       "language": "en",
       "urls": [
         "https://feeds.bbci.co.uk/news/world/rss.xml",
         "https://feeds.bbci.co.uk/news/business/rss.xml"
       ],
-      "access": "공식 RSS (세계·경제)"
+      "access": "공식 RSS (세계·경제)",
+      "region": "유럽"
     },
     {
-      "id": "cnbc",
-      "name": "CNBC",
-      "tier": 3,
+      "id": "guardian",
+      "name": "가디언(경제)",
+      "tier": 2,
       "method": "rss",
       "language": "en",
+      "region": "유럽",
       "urls": [
-        "https://www.cnbc.com/id/100003114/device/rss/rss.html"
+        "https://www.theguardian.com/business/rss"
       ],
-      "access": "공식 RSS (주요 뉴스)"
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단 → 제목·링크·짧은 발췌만"
     },
     {
-      "id": "hankyung",
-      "name": "한국경제",
-      "tier": 3,
+      "id": "ft",
+      "name": "파이낸셜타임스",
+      "tier": 2,
       "method": "rss",
-      "language": "ko",
+      "language": "en",
+      "region": "유럽",
       "urls": [
-        "https://www.hankyung.com/feed/all-news"
+        "https://www.ft.com/rss/home"
       ],
-      "access": "공식 RSS (전체)"
+      "access": "공식 RSS 제목만 (본문은 유료). 일반 수집기 허용, AI 학습용 봇만 차단"
+    },
+    {
+      "id": "dw",
+      "name": "도이체벨레(DW)",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "유럽",
+      "urls": [
+        "https://rss.dw.com/rdf/rss-en-all"
+      ],
+      "access": "공식 RSS (영문 전체), robots.txt 허용"
+    },
+    {
+      "id": "france24",
+      "name": "프랑스24",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "유럽",
+      "urls": [
+        "https://www.france24.com/en/rss"
+      ],
+      "access": "공식 RSS (영문). 일반 수집기 허용, AI 학습용 봇만 차단"
+    },
+    {
+      "id": "euronews",
+      "name": "유로뉴스",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "유럽",
+      "urls": [
+        "https://www.euronews.com/rss"
+      ],
+      "access": "공식 RSS (영문). 일반 수집기 허용, AI 학습용 봇만 차단"
+    },
+    {
+      "id": "politico_eu",
+      "name": "폴리티코 유럽",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "유럽",
+      "urls": [
+        "https://www.politico.eu/feed/"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단"
+    },
+    {
+      "id": "nikkei_asia",
+      "name": "닛케이 아시아",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "일본",
+      "urls": [
+        "https://asia.nikkei.com/rss/feed/nar"
+      ],
+      "access": "공식 RSS 제목·요약만 (본문은 유료). 일반 수집기 허용, AI 학습용 봇만 차단"
+    },
+    {
+      "id": "scmp",
+      "name": "사우스차이나모닝포스트(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "중국·홍콩",
+      "urls": [
+        "https://www.scmp.com/rss/91/feed"
+      ],
+      "access": "공식 RSS (경제), robots.txt 허용"
+    },
+    {
+      "id": "taipei_times",
+      "name": "타이페이타임스",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "대만",
+      "urls": [
+        "https://www.taipeitimes.com/xml/index.rss"
+      ],
+      "access": "공식 RSS. 일반 수집기 허용, AI 학습용 봇만 차단"
+    },
+    {
+      "id": "straits_times",
+      "name": "스트레이츠타임스(경제)",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "동남아",
+      "urls": [
+        "https://www.straitstimes.com/news/business/rss.xml"
+      ],
+      "access": "공식 RSS (경제), robots.txt 허용"
+    },
+    {
+      "id": "economic_times",
+      "name": "이코노믹타임스(인도)",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "region": "인도",
+      "urls": [
+        "https://economictimes.indiatimes.com/rssfeedsdefault.cms"
+      ],
+      "access": "공식 RSS, robots.txt 허용"
     },
     {
       "id": "aljazeera",
       "name": "알자지라",
-      "tier": 3,
+      "tier": 2,
       "method": "rss",
       "language": "en",
       "urls": [
         "https://www.aljazeera.com/xml/rss/all.xml"
       ],
-      "access": "공식 RSS (AP 대체: AP는 공개 RSS 없음)"
+      "access": "공식 RSS (전체). 국제 주요 방송사로 2등급 (AP 대체: AP는 RSS·자동 수집을 robots.txt로 막고 수집기를 403으로 차단)",
+      "region": "중동"
+    },
+    {
+      "id": "arab_news",
+      "name": "아랍뉴스",
+      "tier": 3,
+      "method": "rss",
+      "language": "en",
+      "region": "중동",
+      "urls": [
+        "https://www.arabnews.com/rss.xml"
+      ],
+      "access": "공식 RSS, robots.txt 허용. 사우디 친정부 성향"
+    },
+    {
+      "id": "moscow_times",
+      "name": "모스크바타임스",
+      "tier": 3,
+      "method": "rss",
+      "language": "en",
+      "region": "러시아",
+      "urls": [
+        "https://www.themoscowtimes.com/rss/news"
+      ],
+      "access": "공식 RSS, robots.txt 허용. 해외 망명 독립 매체"
+    },
+    {
+      "id": "mercopress",
+      "name": "메르코프레스",
+      "tier": 3,
+      "method": "rss",
+      "language": "en",
+      "region": "중남미",
+      "urls": [
+        "https://en.mercopress.com/rss/"
+      ],
+      "access": "공식 RSS, robots.txt 허용. 남미 지역 매체"
     }
   ]
 }

@@ -8,12 +8,14 @@ const SourceSchema = z.object({
   /** 데이터베이스 sources 표의 키 (영문 소문자·숫자·밑줄) */
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string().min(1),
-  /** 1: 공식 발표, 2: 통신사·연구기관·주요 경제지, 3: 일반 미디어 */
+  /** 1: 공식 발표, 2: 국내외 주요 통신사·언론·연구기관, 3: 관점이 치우칠 수 있거나 규모가 작은 매체 */
   tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   /** rss: RSS 읽기, page: 목록 페이지 읽기 */
   method: z.enum(["rss", "page"]),
   /** 원문 언어 — PRD 6번: 영어·한국어만 */
   language: z.enum(["en", "ko"]),
+  /** 매체가 속한 나라·지역 — 현지에서 먼저 크게 다루는 이슈를 지역별로 보기 위해 */
+  region: z.string().min(1),
   urls: z.array(z.url()).min(1),
   /** 접근 방식과 확인 결과 메모 */
   access: z.string(),
