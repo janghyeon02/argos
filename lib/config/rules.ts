@@ -53,12 +53,16 @@ export const RULES = {
     reopenArchivedWithinDays: 90,
     /** AI 한 번에 묶어 보내는 자료 수 — 같은 묶음 안의 자료끼리도 한 이슈로 묶을 수 있다 */
     clusterBatchSize: 10,
-    /** AI에 보여 주는 기존 이슈 후보 수 (최근에 자료가 들어온 순) */
-    maxCandidateIssues: 200,
+    /** 비교 대상으로 삼는 기존 이슈 수 (최근에 자료가 들어온 순) */
+    maxCandidateIssues: 500,
+    /** 기사마다 AI에 보여 주는, 뜻이 가장 가까운 이슈 수 */
+    candidatesPerArticle: 8,
+    /** 이보다 뜻이 먼 이슈는 후보로 보여 주지 않는다 */
+    minCandidateSimilarity: 0.2,
     /** 한 번 실행에서 묶는 최대 자료 수 */
     clusterMaxPerRun: 3000,
     /** 동시에 보내는 묶기 요청 수 — 동시에 같은 새 이슈가 두 번 생길 수 있어 끝에 중복 합치기를 한다 */
-    clusterConcurrency: 5,
+    clusterConcurrency: 8,
     /** 이번 실행에서 생긴 이슈와 뜻이 이만큼 비슷한 이슈는 같은 이슈로 합친다 */
     mergeMinSimilarity: 0.7,
   },

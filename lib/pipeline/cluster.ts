@@ -95,7 +95,7 @@ async function loadCandidateIssues(db: Db, now: Date): Promise<CandidateIssue[]>
     .limit(RULES.issue.maxCandidateIssues);
 }
 
-function batchSchemaFor(ids: number[], issueIds: Set<number>) {
+function batchSchemaFor(ids: number[]) {
   const expected = new Set(ids);
   return BatchSchema.refine(
     (value) => value.items.length === ids.length && value.items.every((item) => expected.has(item.id)),
@@ -104,15 +104,22 @@ function batchSchemaFor(ids: number[], issueIds: Set<number>) {
     (value) =>
       value.items.every(
         (item) =>
-          !item.relevant ||
-          (item.issue_id > 0 && issueIds.has(item.issue_id)) ||
-          (item.issue_id === 0 && item.new_issue_key.trim() !== ""),
+          !item.relevant || item.issue_id > 0 || item.new_issue_key.trim() !== "",
       ),
     { message: "관련 기사는 기존 이슈 id 또는 새 이슈 키·제목이 있어야 합니다" },
   ).refine(
-    (value) => value.items.every((item) => !item.relevant || /[가-힣]/.test(item.new_issue_title)),
+    (value) => value.items.every((item) => !item.relevant || item.issue_id > 0 || /[가-힣]/.test(item.new_issue_title)),
     { message: "새 이슈 제목은 한국어여야 합니다" },
   );
+}
+
+/** 아직 뜻(임베딩)을 모르는 이슈만 한 번에 계산해 캐시에 넣는다 */
+async function ensureVectors(pool: CandidateIssue[], cache: Map<number, number[]>, totals: ClusterResult): Promise<void> {
+  const missing = pool.filter((issue) => !cache.has(issue.id));
+  if (missing.length === 0) return;
+  const embedded = await embed(missing.map((issue) => `${issue.title}\n${issue.summaryKo ?? ""}`));
+  totals.embeddingTokens += embedded.tokens;
+  missing.forEach((issue, index) => cache.set(issue.id, embedded.vectors[index]));
 }
 
 /** 묶음 하나를 AI에 보내 이슈를 정하고 저장한다. 새로 생긴 이슈는 후보 목록에 바로 더한다. */
@@ -123,9 +130,27 @@ async function clusterBatch(
   touched: Set<number>,
   totals: ClusterResult,
   now: Date,
+  issueVectors: Map<number, number[]>,
 ): Promise<void> {
-  // 후보가 너무 많아지지 않게 최근 이슈만 보여 준다. 새 이슈는 공유 목록(candidates) 앞에 더해져 다음 묶음이 본다.
-  const shown = candidates.slice(0, RULES.issue.maxCandidateIssues);
+  // 기사마다 뜻이 가장 가까운 기존 이슈만 골라 보여 준다 (프롬프트를 작게 유지해 빠르고 정확하게).
+  // 새 이슈는 공유 목록(candidates) 앞에 더해져 다음 묶음이 본다.
+  const pool = candidates.slice(0, RULES.issue.maxCandidateIssues);
+  await ensureVectors(pool, issueVectors, totals);
+  const articleTexts = rows.map((row) => `${row.title}\n${row.summaryKo ?? ""}`);
+  const embeddedArticles = await embed(articleTexts);
+  totals.embeddingTokens += embeddedArticles.tokens;
+  const articleVector = new Map(rows.map((row, index) => [row.id, embeddedArticles.vectors[index]]));
+  const shownIds = new Set<number>();
+  for (const row of rows) {
+    const vector = articleVector.get(row.id)!;
+    pool
+      .map((issue) => ({ id: issue.id, score: similarity(vector, issueVectors.get(issue.id)!) }))
+      .filter((item) => item.score >= RULES.issue.minCandidateSimilarity)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, RULES.issue.candidatesPerArticle)
+      .forEach((item) => shownIds.add(item.id));
+  }
+  const shown = pool.filter((issue) => shownIds.has(issue.id));
   const issueIds = new Set(shown.map((issue) => issue.id));
   const result = await askJson({
     tier: "fast",
@@ -142,10 +167,7 @@ async function clusterBatch(
         summary: row.summaryKo ?? "",
       })),
     }),
-    schema: batchSchemaFor(
-      rows.map((row) => row.id),
-      issueIds,
-    ),
+    schema: batchSchemaFor(rows.map((row) => row.id)),
   });
   totals.inputTokens += result.usage.inputTokens;
   totals.outputTokens += result.usage.outputTokens;
@@ -164,19 +186,7 @@ async function clusterBatch(
   if (relevant.length === 0) return;
 
   // AI가 기존 이슈에 연결한 자료는 글 뜻의 유사도로 한 번 더 확인한다 (엉뚱한 연결을 막기 위해)
-  const linkTargets = [...new Set(relevant.filter((item) => item.issue_id > 0).map((item) => item.issue_id))];
-  const issueTexts = linkTargets.map((id) => {
-    const issue = candidates.find((candidate) => candidate.id === id)!;
-    return `${issue.title}\n${issue.summaryKo ?? ""}`;
-  });
-  const articleTexts = relevant.map((item) => {
-    const row = byId.get(item.id)!;
-    return `${row.title}\n${row.summaryKo ?? ""}`;
-  });
-  const embedded = await embed([...issueTexts, ...articleTexts]);
-  totals.embeddingTokens += embedded.tokens;
-  const issueVector = new Map(linkTargets.map((id, index) => [id, embedded.vectors[index]]));
-  const articleVector = new Map(relevant.map((item, index) => [item.id, embedded.vectors[linkTargets.length + index]]));
+  const issueVector = issueVectors;
 
   const newIssueIdByKey = new Map<string, number>();
   const links: { issueId: number; articleId: number; confidence: number; publishedAt: Date }[] = [];
@@ -184,8 +194,10 @@ async function clusterBatch(
   for (const item of relevant) {
     const row = byId.get(item.id)!;
     // 기존 이슈 연결은 확신도 0.7 이상(PRD Must① 규칙 2)이면서 글 뜻도 충분히 비슷할 때만 받아들인다
+    // 후보 목록에 없던 번호는 받아들이지 않는다
     const accepted =
       item.issue_id > 0 &&
+      issueIds.has(item.issue_id) &&
       item.confidence >= RULES.issue.sameIssueMinConfidence &&
       similarity(issueVector.get(item.issue_id)!, articleVector.get(item.id)!) >= RULES.issue.minLinkSimilarity;
 
@@ -207,7 +219,8 @@ async function clusterBatch(
       if (existing) {
         issueId = existing;
       } else {
-        const title = item.new_issue_title.trim();
+        // 제목이 한국어가 아니면(연결이 거절된 경우 등) 기사 요약 앞부분으로 대신한다
+        const title = /[가-힣]/.test(item.new_issue_title) ? item.new_issue_title.trim() : (row.summaryKo ?? row.title).replace(/\.$/, "").slice(0, 30);
         const summary = item.new_issue_summary.trim() || row.summaryKo;
         const [created] = await db
           .insert(issues)
@@ -216,6 +229,8 @@ async function clusterBatch(
         issueId = created.id;
         newIssueIdByKey.set(key, issueId);
         candidates.unshift({ id: issueId, title, summaryKo: summary, status: "진행 중" });
+        // 새 이슈의 뜻은 처음 기사의 뜻으로 둔다 (다음 묶음에서 바로 비교할 수 있게)
+        issueVectors.set(issueId, articleVector.get(row.id)!);
         totals.newIssues++;
       }
     }
@@ -399,6 +414,7 @@ export async function cluster(db: Db, limit: number = RULES.issue.clusterMaxPerR
   const batches: PendingArticle[][] = [];
   for (let i = 0; i < pending.length; i += size) batches.push(pending.slice(i, i + size));
   const before = new Set(candidates.map((issue) => issue.id));
+  const issueVectors = new Map<number, number[]>();
 
   // 여러 묶음을 동시에 처리한다. 앞 묶음에서 생긴 새 이슈는 공유 후보 목록에 바로 들어가 다음 묶음이 본다.
   let next = 0;
@@ -407,12 +423,12 @@ export async function cluster(db: Db, limit: number = RULES.issue.clusterMaxPerR
     while (next < batches.length) {
       const batch = batches[next++];
       try {
-        await clusterBatch(db, batch, candidates, touched, totals, now);
+        await clusterBatch(db, batch, candidates, touched, totals, now, issueVectors);
       } catch (error) {
         // 실패한 자료는 clustered_at이 비어 있어 다음 실행 때 다시 처리된다
         totals.failedBatches++;
         const message = error instanceof Error ? error.message : String(error);
-        console.log(`  ⚠️  묶음 실패 (자료 ${batch[0].id}~${batch.at(-1)!.id}): ${message.slice(0, 160)}`);
+        console.log(`  ⚠️  묶음 실패 (자료 ${batch[0].id}~${batch.at(-1)!.id}): ${message.replace(/\s+/g, " ").slice(0, 400)}`);
       }
       done++;
       if (done % 20 === 0) console.log(`  … ${Math.min(done * size, pending.length)}/${pending.length}건 처리`);
