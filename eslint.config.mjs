@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 삭제 대기 파일 (CLAUDE.md trash-can 규칙)
+    "trash-can/**",
   ]),
 ]);
 
