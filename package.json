@@ -11,7 +11,8 @@
     "check:db": "node --env-file-if-exists=.env scripts/check-db.mts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "check:ai": "tsx --env-file-if-exists=.env scripts/check-ai.ts"
+    "check:ai": "tsx --env-file-if-exists=.env scripts/check-ai.ts",
+    "check:sources": "tsx scripts/check-sources.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

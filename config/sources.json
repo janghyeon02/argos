@@ -1,0 +1,172 @@
+{
+  "checkedAt": "2026-10-22",
+  "sources": [
+    {
+      "id": "fed",
+      "name": "미국 연준(Fed)",
+      "tier": 1,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://www.federalreserve.gov/feeds/press_all.xml"
+      ],
+      "access": "공식 RSS"
+    },
+    {
+      "id": "ecb",
+      "name": "유럽중앙은행(ECB)",
+      "tier": 1,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://www.ecb.europa.eu/rss/press.html"
+      ],
+      "access": "공식 RSS"
+    },
+    {
+      "id": "boe",
+      "name": "영란은행(BoE)",
+      "tier": 1,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://www.bankofengland.co.uk/rss/news"
+      ],
+      "access": "공식 RSS"
+    },
+    {
+      "id": "bis",
+      "name": "국제결제은행(BIS)",
+      "tier": 1,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://www.bis.org/doclist/all_pressrels.rss"
+      ],
+      "access": "공식 RSS (IMF 대체: IMF는 자동 접근 차단)"
+    },
+    {
+      "id": "whitehouse",
+      "name": "백악관",
+      "tier": 1,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://www.whitehouse.gov/news/feed/"
+      ],
+      "access": "공식 RSS, robots.txt 일반 수집 허용"
+    },
+    {
+      "id": "bok",
+      "name": "한국은행",
+      "tier": 1,
+      "method": "rss",
+      "language": "ko",
+      "urls": [
+        "https://www.bok.or.kr/portal/bbs/B0000338/news.rss"
+      ],
+      "access": "공식 RSS"
+    },
+    {
+      "id": "moef",
+      "name": "기획재정부",
+      "tier": 1,
+      "method": "rss",
+      "language": "ko",
+      "urls": [
+        "https://www.moef.go.kr/com/detailRssTagService.do?bbsId=MOSFBBS_000000000028"
+      ],
+      "access": "공식 RSS(보도자료), robots.txt 일반 수집 허용"
+    },
+    {
+      "id": "yonhap",
+      "name": "연합뉴스",
+      "tier": 2,
+      "method": "rss",
+      "language": "ko",
+      "urls": [
+        "https://www.yna.co.kr/rss/news.xml",
+        "https://www.yna.co.kr/rss/economy.xml"
+      ],
+      "access": "공식 RSS (전체 최신·경제)"
+    },
+    {
+      "id": "yonhap_en",
+      "name": "연합뉴스 영문판",
+      "tier": 2,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://en.yna.co.kr/RSS/news.xml"
+      ],
+      "access": "공식 RSS (로이터 대체: 로이터는 공개 RSS 없음)"
+    },
+    {
+      "id": "kdi",
+      "name": "한국개발연구원(KDI)",
+      "tier": 2,
+      "method": "page",
+      "language": "ko",
+      "urls": [
+        "https://www.kdi.re.kr/research/reportList"
+      ],
+      "access": "RSS 주소가 글 목록이 아닌 설정 파일만 돌려줘서 연구보고서 목록 페이지 읽기. robots.txt 전체 허용 (국제금융센터 대체: robots.txt가 검색엔진 외 수집을 막음)"
+    },
+    {
+      "id": "kiep",
+      "name": "대외경제정책연구원(KIEP)",
+      "tier": 2,
+      "method": "page",
+      "language": "ko",
+      "urls": [
+        "https://www.kiep.go.kr/gallery.es?mid=a10101010000&bid=0001"
+      ],
+      "access": "RSS 없음, 발간물 목록 페이지 읽기. robots.txt는 일반 수집기를 막지 않지만 AI 학습용 봇은 막으므로 제목·링크·짧은 발췌만 쓰고 하루 몇 번 이하로 읽는다"
+    },
+    {
+      "id": "bbc",
+      "name": "BBC",
+      "tier": 3,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://feeds.bbci.co.uk/news/world/rss.xml",
+        "https://feeds.bbci.co.uk/news/business/rss.xml"
+      ],
+      "access": "공식 RSS (세계·경제)"
+    },
+    {
+      "id": "cnbc",
+      "name": "CNBC",
+      "tier": 3,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://www.cnbc.com/id/100003114/device/rss/rss.html"
+      ],
+      "access": "공식 RSS (주요 뉴스)"
+    },
+    {
+      "id": "hankyung",
+      "name": "한국경제",
+      "tier": 3,
+      "method": "rss",
+      "language": "ko",
+      "urls": [
+        "https://www.hankyung.com/feed/all-news"
+      ],
+      "access": "공식 RSS (전체)"
+    },
+    {
+      "id": "aljazeera",
+      "name": "알자지라",
+      "tier": 3,
+      "method": "rss",
+      "language": "en",
+      "urls": [
+        "https://www.aljazeera.com/xml/rss/all.xml"
+      ],
+      "access": "공식 RSS (AP 대체: AP는 공개 RSS 없음)"
+    }
+  ]
+}
