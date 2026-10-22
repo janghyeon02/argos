@@ -5,7 +5,7 @@ import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { GRADES, RULES, type Grade } from "@/lib/config/rules";
 import { SOURCES } from "@/lib/config/sources";
 import { getDb } from "@/lib/db/client";
-import { articles, issueArticles, issues, runs, scores } from "@/lib/db/schema";
+import { articles, issueArticles, issues, runs, scenarioSignals, scenarios, scores } from "@/lib/db/schema";
 
 const SOURCE_BY_ID = new Map(SOURCES.map((source) => [source.id, source]));
 
@@ -150,5 +150,12 @@ export async function getIssue(id: number) {
       status: row.status,
     };
   });
-  return { issue, score: score ?? null, timeline };
+  // 시나리오는 버전 순서대로 (확률 변경 이력용), 갈림길 신호는 시나리오별로
+  const versions = await db
+    .select({ version: scenarios.version, body: scenarios.body, changeReason: scenarios.changeReason, createdAt: scenarios.createdAt })
+    .from(scenarios)
+    .where(and(eq(scenarios.issueId, id), eq(scenarios.mode, "live")))
+    .orderBy(desc(scenarios.version));
+  const signals = await db.select().from(scenarioSignals).where(eq(scenarioSignals.issueId, id)).orderBy(scenarioSignals.id);
+  return { issue, score: score ?? null, timeline, scenarioVersions: versions, signals };
 }

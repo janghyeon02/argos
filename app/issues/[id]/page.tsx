@@ -28,7 +28,8 @@ async function IssueDetail({ params }: { params: PageProps<"/issues/[id]">["para
   if (!Number.isInteger(id) || id <= 0) notFound();
   const data = await getIssue(id);
   if (!data) notFound();
-  const { issue, score, timeline } = data;
+  const { issue, score, timeline, scenarioVersions, signals } = data;
+  const latest = scenarioVersions[0];
   const now = new Date();
   const evidenceIds = new Set([...(score?.evidence?.impact ?? []), ...(score?.evidence?.likelihood ?? [])]);
   const scenarioReady = RULES.grade.minScore[issue.grade] >= RULES.grade.minScore[RULES.scenario.minGrade];
@@ -46,8 +47,71 @@ async function IssueDetail({ params }: { params: PageProps<"/issues/[id]">["para
       </header>
 
       <Section title="시나리오">
-        {scenarioReady ? (
-          <p className="text-sm text-muted">시나리오 생성 기능은 다음 단계에서 붙어요.</p>
+        {latest ? (
+          <div className="grid gap-4">
+            {latest.body.map((item) => {
+              const kindSignals = signals.filter((signal) => signal.scenarioKind === item.kind);
+              return (
+                <div key={item.kind} className="rounded-lg border border-line p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-semibold">{item.kind} 시나리오</h3>
+                    <span className="text-lg font-bold tabular-nums">{item.probability}%</span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
+                    <div className={`h-full rounded-full ${SCENARIO_BAR[item.kind]}`} style={{ width: `${item.probability}%` }} />
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed">{item.path}</p>
+                  {kindSignals.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-xs font-medium text-muted">갈림길 신호</p>
+                      <ul className="mt-1.5 grid gap-1.5">
+                        {kindSignals.map((signal) => (
+                          <li key={signal.id} className="flex gap-2 text-sm">
+                            <span className={signal.state === "켜짐" ? "text-[var(--grade-severe)]" : "text-muted"} aria-label={signal.state}>
+                              {signal.state === "켜짐" ? "●" : "○"}
+                            </span>
+                            <span>
+                              <span className="font-medium">{signal.indicator}</span>
+                              <span className="text-muted"> — {signal.condition}</span>
+                              <span className="block text-xs text-muted">{signal.rationale}</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {item.koreaImpact.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {item.koreaImpact.map((impact) => (
+                        <span key={impact.channel} className="rounded-md border border-line px-2 py-0.5 text-xs">
+                          {impact.channel} <span className={impact.direction === "↓" ? "text-[var(--grade-severe)]" : "text-accent"}>{impact.direction}</span> {impact.size}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <ul className="mt-4 list-disc pl-5 text-sm text-muted">
+                    {item.checklist.map((check) => (
+                      <li key={check}>{check}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+            <details className="text-sm">
+              <summary className="cursor-pointer text-muted">확률 변경 이력 ({scenarioVersions.length}개 버전)</summary>
+              <ol className="mt-2 grid gap-2">
+                {scenarioVersions.map((version) => (
+                  <li key={version.version} className="text-xs text-muted">
+                    <span className="font-medium text-ink">v{version.version}</span> · {formatKst(version.createdAt)} ·{" "}
+                    {version.body.map((item) => `${item.kind} ${item.probability}%`).join(" / ")}
+                    {version.changeReason && <span className="block">{version.changeReason}</span>}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          </div>
+        ) : scenarioReady ? (
+          <p className="text-sm text-muted">다음 실행 때 시나리오가 만들어져요.</p>
         ) : (
           <p className="text-sm text-muted">
             시나리오는 &lsquo;{RULES.scenario.minGrade}&rsquo; 이상 이슈에서 만들어져요. 지금은 &lsquo;{issue.grade}&rsquo; 단계예요.
@@ -115,6 +179,12 @@ async function IssueDetail({ params }: { params: PageProps<"/issues/[id]">["para
     </article>
   );
 }
+
+const SCENARIO_BAR: Record<string, string> = {
+  기본: "bg-ink/50",
+  악화: "bg-[var(--grade-warning)]",
+  극단: "bg-[var(--grade-severe)]",
+};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

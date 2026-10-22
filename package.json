@@ -16,7 +16,8 @@
     "collect": "tsx --env-file-if-exists=.env scripts/collect.ts",
     "enrich": "tsx --env-file-if-exists=.env scripts/enrich.ts",
     "cluster": "tsx --env-file-if-exists=.env scripts/cluster.ts",
-    "score": "tsx --env-file-if-exists=.env scripts/score.ts"
+    "score": "tsx --env-file-if-exists=.env scripts/score.ts",
+    "scenario": "tsx --env-file-if-exists=.env scripts/scenario-alert.ts"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
