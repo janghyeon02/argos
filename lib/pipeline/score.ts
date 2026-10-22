@@ -13,6 +13,7 @@ import { GRADES, IMPACT_CHANNELS, RULES, type Grade, type ImpactChannel } from "
 import { SOURCES } from "../config/sources";
 import type { Db } from "../db/client";
 import { articles, issueArticles, issues, rubricVersions, scores, type ScoreEvidence } from "../db/schema";
+import { inScope, LIVE, scopeValues, type RunScope } from "./scope";
 
 const TIER_BY_SOURCE = new Map(SOURCES.map((source) => [source.id, source.tier]));
 const NAME_BY_SOURCE = new Map(SOURCES.map((source) => [source.id, source.name]));
@@ -96,6 +97,7 @@ function systemPrompt(): string {
 
 규칙:
 - 주어진 기사(제목·한국어 요약)에 실제로 나온 내용만 근거로 쓴다. 기사에 없는 사실·수치를 짐작해 점수를 올리지 않는다.
+- 기준 시각(as_of) 이후에 일어난 일은 모르는 것으로 한다. 그 뒤의 결과를 알고 있더라도 판단에 쓰지 않는다.
 - impact_evidence, likelihood_evidence에는 각 축 점수의 근거가 된 기사 id를 넣는다. 근거 기사가 없으면 빈 배열로 두고 그 축은 낮게 준다.
 - systemic_origin: 이슈의 진원이 미국·중국·유로존·일본이거나 한국 자체면 true.
 - scheduled_trigger_days: 기사에 나온 예정된 결정·발표·표결·선거까지 남은 날 수(기준 시각 기준). 없으면 null.
@@ -152,7 +154,7 @@ export type ScoreResult = {
 
 type IssueRow = { id: number; title: string; summaryKo: string | null; grade: Grade; pendingDowngradeRuns: number };
 
-async function scoreIssue(db: Db, issue: IssueRow, now: Date, totals: ScoreResult): Promise<void> {
+async function scoreIssue(db: Db, issue: IssueRow, now: Date, totals: ScoreResult, scope: RunScope): Promise<void> {
   const linked: IssueArticle[] = await db
     .select({
       id: articles.id,
@@ -191,7 +193,7 @@ async function scoreIssue(db: Db, issue: IssueRow, now: Date, totals: ScoreResul
   const [last] = await db
     .select()
     .from(scores)
-    .where(and(eq(scores.issueId, issue.id), eq(scores.mode, "live"), eq(scores.reusedEvaluation, false)))
+    .where(and(eq(scores.issueId, issue.id), inScope(scores, scope), eq(scores.reusedEvaluation, false)))
     .orderBy(desc(scores.createdAt))
     .limit(1);
   const needsEvaluation = !last || linked.some((row) => row.linkedAt > last.createdAt);
@@ -277,7 +279,7 @@ async function scoreIssue(db: Db, issue: IssueRow, now: Date, totals: ScoreResul
     isBorderline: isBorderline(composite),
     reusedEvaluation: reused,
     evidence,
-    mode: "live",
+    ...scopeValues(scope),
   });
   await db
     .update(issues)
@@ -303,8 +305,12 @@ async function ensureRubric(db: Db): Promise<void> {
 }
 
 /** 진행 중인 실제 이슈를 모두 채점한다. 이슈 하나가 실패해도 나머지는 계속한다. */
-export async function scoreIssues(db: Db, options: { now?: Date; issueIds?: number[]; concurrency?: number } = {}): Promise<ScoreResult> {
+export async function scoreIssues(
+  db: Db,
+  options: { now?: Date; issueIds?: number[]; concurrency?: number; scope?: RunScope } = {},
+): Promise<ScoreResult> {
   const now = options.now ?? new Date();
+  const scope = options.scope ?? LIVE;
   await ensureRubric(db);
   const recentSince = new Date(now.getTime() - RULES.collection.maxArticleAgeDays * 24 * HOUR);
   const list: IssueRow[] = await db
@@ -312,7 +318,7 @@ export async function scoreIssues(db: Db, options: { now?: Date; issueIds?: numb
     .from(issues)
     .where(
       and(
-        eq(issues.mode, "live"),
+        inScope(issues, scope),
         eq(issues.status, "진행 중"),
         gte(issues.lastArticleAt, recentSince),
         options.issueIds ? inArray(issues.id, options.issueIds) : undefined,
@@ -333,7 +339,7 @@ export async function scoreIssues(db: Db, options: { now?: Date; issueIds?: numb
     while (next < list.length) {
       const issue = list[next++];
       try {
-        await scoreIssue(db, issue, now, totals);
+        await scoreIssue(db, issue, now, totals, scope);
       } catch (error) {
         totals.failed++;
         console.log(`  ⚠️  이슈 ${issue.id} 「${issue.title}」 채점 실패 — 평가 보류: ${(error instanceof Error ? error.message : String(error)).slice(0, 140)}`);

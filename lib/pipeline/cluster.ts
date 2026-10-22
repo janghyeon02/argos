@@ -4,13 +4,14 @@
 // PRD Must① 규칙 2: 확신도 0.7 미만이면 새 카드를 만들고, 자료 1건은 카드 1개에만 넣는다.
 // 경제·금융·지정학 리스크와 관련 없는 자료(지역 사건·스포츠·문화 등)는 이슈로 묶지 않는다.
 
-import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { askJson, embed, similarity } from "../ai/llm";
 import { RULES } from "../config/rules";
 import { SOURCES } from "../config/sources";
 import type { Db } from "../db/client";
 import { articles, issueArticles, issues } from "../db/schema";
+import { inScope, LIVE, scopeValues, type RunScope } from "./scope";
 
 const TIER_BY_SOURCE = new Map(SOURCES.map((source) => [source.id, source.tier]));
 const NAME_BY_SOURCE = new Map(SOURCES.map((source) => [source.id, source.name]));
@@ -85,12 +86,12 @@ export type ClusterResult = {
 };
 
 /** 묶기 비교 대상: 진행 중 이슈 + 최근 90일 안에 보관된 이슈, 최근에 자료가 들어온 순 */
-async function loadCandidateIssues(db: Db, now: Date): Promise<CandidateIssue[]> {
+async function loadCandidateIssues(db: Db, now: Date, scope: RunScope): Promise<CandidateIssue[]> {
   const since = new Date(now.getTime() - RULES.issue.reopenArchivedWithinDays * 86_400_000);
   return db
     .select({ id: issues.id, title: issues.title, summaryKo: issues.summaryKo, status: issues.status })
     .from(issues)
-    .where(and(eq(issues.mode, "live"), or(eq(issues.status, "진행 중"), gte(issues.archivedAt, since))))
+    .where(and(inScope(issues, scope), or(eq(issues.status, "진행 중"), gte(issues.archivedAt, since))))
     .orderBy(desc(sql`coalesce(${issues.lastArticleAt}, ${issues.createdAt})`))
     .limit(RULES.issue.maxCandidateIssues);
 }
@@ -131,6 +132,7 @@ async function clusterBatch(
   totals: ClusterResult,
   now: Date,
   issueVectors: Map<number, number[]>,
+  scope: RunScope,
 ): Promise<void> {
   // 기사마다 뜻이 가장 가까운 기존 이슈만 골라 보여 준다 (프롬프트를 작게 유지해 빠르고 정확하게).
   // 새 이슈는 공유 목록(candidates) 앞에 더해져 다음 묶음이 본다.
@@ -224,7 +226,7 @@ async function clusterBatch(
         const summary = item.new_issue_summary.trim() || row.summaryKo;
         const [created] = await db
           .insert(issues)
-          .values({ title, summaryKo: summary, mode: "live", lastArticleAt: row.publishedAt })
+          .values({ title, summaryKo: summary, ...scopeValues(scope), lastArticleAt: row.publishedAt })
           .returning({ id: issues.id });
         issueId = created.id;
         newIssueIdByKey.set(key, issueId);
@@ -378,7 +380,12 @@ async function confirmRumors(db: Db, issueIds: number[], totals: ClusterResult, 
  * 요약이 끝났지만 아직 묶지 않은 실제 자료를 오래된 것부터 이슈로 묶는다.
  * 묶음은 차례로 처리한다 — 앞 묶음에서 생긴 새 이슈를 다음 묶음이 볼 수 있어야 하기 때문이다.
  */
-export async function cluster(db: Db, limit: number = RULES.issue.clusterMaxPerRun, now: Date = new Date()): Promise<ClusterResult> {
+export async function cluster(
+  db: Db,
+  limit: number = RULES.issue.clusterMaxPerRun,
+  now: Date = new Date(),
+  scope: RunScope = LIVE,
+): Promise<ClusterResult> {
   const pending: PendingArticle[] = await db
     .select({
       id: articles.id,
@@ -389,7 +396,7 @@ export async function cluster(db: Db, limit: number = RULES.issue.clusterMaxPerR
       publishedAt: articles.publishedAt,
     })
     .from(articles)
-    .where(and(eq(articles.mode, "live"), isNotNull(articles.summaryKo), isNull(articles.clusteredAt), gte(articles.publishedAt, recentSince(now))))
+    .where(and(inScope(articles, scope), isNotNull(articles.summaryKo), isNull(articles.clusteredAt), gte(articles.publishedAt, recentSince(now)), lte(articles.publishedAt, now)))
     .orderBy(asc(articles.publishedAt))
     .limit(limit);
 
@@ -407,7 +414,7 @@ export async function cluster(db: Db, limit: number = RULES.issue.clusterMaxPerR
     outputTokens: 0,
     embeddingTokens: 0,
   };
-  const candidates = await loadCandidateIssues(db, now);
+  const candidates = await loadCandidateIssues(db, now, scope);
   const touched = new Set<number>();
   const size = RULES.issue.clusterBatchSize;
 
@@ -423,7 +430,7 @@ export async function cluster(db: Db, limit: number = RULES.issue.clusterMaxPerR
     while (next < batches.length) {
       const batch = batches[next++];
       try {
-        await clusterBatch(db, batch, candidates, touched, totals, now, issueVectors);
+        await clusterBatch(db, batch, candidates, touched, totals, now, issueVectors, scope);
       } catch (error) {
         // 실패한 자료는 clustered_at이 비어 있어 다음 실행 때 다시 처리된다
         totals.failedBatches++;
@@ -445,10 +452,10 @@ export async function cluster(db: Db, limit: number = RULES.issue.clusterMaxPerR
 }
 
 /** 요약은 끝났지만 아직 묶지 않은 최근 실제 자료 수 */
-export function countUnclustered(db: Db, now: Date = new Date()): Promise<number> {
+export function countUnclustered(db: Db, now: Date = new Date(), scope: RunScope = LIVE): Promise<number> {
   return db.$count(
     articles,
-    and(eq(articles.mode, "live"), isNotNull(articles.summaryKo), isNull(articles.clusteredAt), gte(articles.publishedAt, recentSince(now))),
+    and(inScope(articles, scope), isNotNull(articles.summaryKo), isNull(articles.clusteredAt), gte(articles.publishedAt, recentSince(now)), lte(articles.publishedAt, now)),
   );
 }
 

@@ -57,6 +57,12 @@ async function IssueBoard({ searchParams }: { searchParams: PageProps<"/">["sear
         ))}
       </nav>
 
+      <p className="mt-4 text-right text-xs">
+        <Link href="/backtest" className="text-muted underline-offset-4 hover:text-ink hover:underline">
+          과거 사례 검증 결과 보기 →
+        </Link>
+      </p>
+
       {items.length === 0 ? (
         <p className="mt-16 text-center text-sm text-muted">이 등급에 해당하는 이슈가 없어요.</p>
       ) : (

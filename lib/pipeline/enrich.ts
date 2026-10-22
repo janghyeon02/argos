@@ -3,13 +3,14 @@
 // PRD Must① 규칙 3: 원문 언어와 상관없이 한국어 3문장 이내, 원문에 없는 수치·사실은 만들지 않는다.
 // 원문 전문은 저장하지 않으므로 제목과 짧은 발췌만 보고 판단한다 (PRD 7번).
 
-import { and, desc, eq, gte, isNull, lt, ne } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lt, lte, ne } from "drizzle-orm";
 import { z } from "zod";
 import { askJson } from "../ai/llm";
 import { RULES } from "../config/rules";
 import { SOURCES } from "../config/sources";
 import type { Db } from "../db/client";
 import { articles } from "../db/schema";
+import { inScope, LIVE, type RunScope } from "./scope";
 
 // "(카더라)"로 볼 수 있는 대표 표현 (언어별). AI가 고른 근거 표현에 이 중 하나가 있어야 "(카더라)"로 인정한다.
 const RUMOR_MARKERS =
@@ -105,7 +106,7 @@ function describe(row: ArticleRow) {
 }
 
 /** 정정·철회 보도가 바로잡는 원래 기사를 같은 출처의 최근 기사에서 찾는다 */
-async function findCorrectionTarget(db: Db, row: ArticleRow, hint: string): Promise<{ id: number; tokens: [number, number] } | null> {
+async function findCorrectionTarget(db: Db, row: ArticleRow, hint: string, scope: RunScope): Promise<{ id: number; tokens: [number, number] } | null> {
   const since = new Date(row.publishedAt.getTime() - RULES.enrich.correctionLookbackDays * 86_400_000);
   const candidates = await db
     .select({ id: articles.id, title: articles.title, publishedAt: articles.publishedAt })
@@ -113,7 +114,7 @@ async function findCorrectionTarget(db: Db, row: ArticleRow, hint: string): Prom
     .where(
       and(
         eq(articles.sourceId, row.sourceId),
-        eq(articles.mode, "live"),
+        inScope(articles, scope),
         ne(articles.id, row.id),
         gte(articles.publishedAt, since),
         lt(articles.publishedAt, row.publishedAt),
@@ -139,7 +140,7 @@ async function findCorrectionTarget(db: Db, row: ArticleRow, hint: string): Prom
 }
 
 /** 묶음 하나를 AI에 보내 판정하고 결과를 저장한다 */
-async function enrichBatch(db: Db, rows: ArticleRow[], totals: EnrichResult): Promise<void> {
+async function enrichBatch(db: Db, rows: ArticleRow[], totals: EnrichResult, scope: RunScope): Promise<void> {
   const result = await askJson({
     tier: "fast",
     schemaName: "article_judgements",
@@ -164,7 +165,7 @@ async function enrichBatch(db: Db, rows: ArticleRow[], totals: EnrichResult): Pr
     if (isRumor) totals.rumors++;
 
     if (item.correction !== "없음") {
-      const target = await findCorrectionTarget(db, row, item.correction_target);
+      const target = await findCorrectionTarget(db, row, item.correction_target, scope);
       if (target) {
         totals.inputTokens += target.tokens[0];
         totals.outputTokens += target.tokens[1];
@@ -179,7 +180,12 @@ async function enrichBatch(db: Db, rows: ArticleRow[], totals: EnrichResult): Pr
  * 아직 요약이 없는 실제 자료를 최신순으로 판정한다.
  * 묶음 하나가 실패해도 나머지는 계속하고, 실패한 자료는 다음 실행 때 다시 처리된다.
  */
-export async function enrich(db: Db, limit: number = RULES.enrich.maxPerRun): Promise<EnrichResult> {
+export async function enrich(
+  db: Db,
+  limit: number = RULES.enrich.maxPerRun,
+  options: { scope?: RunScope; until?: Date } = {},
+): Promise<EnrichResult> {
+  const scope = options.scope ?? LIVE;
   const pending: ArticleRow[] = await db
     .select({
       id: articles.id,
@@ -190,7 +196,7 @@ export async function enrich(db: Db, limit: number = RULES.enrich.maxPerRun): Pr
       publishedAt: articles.publishedAt,
     })
     .from(articles)
-    .where(and(isNull(articles.summaryKo), eq(articles.mode, "live")))
+    .where(and(isNull(articles.summaryKo), inScope(articles, scope), options.until ? lte(articles.publishedAt, options.until) : undefined))
     .orderBy(desc(articles.publishedAt))
     .limit(limit);
 
@@ -204,7 +210,7 @@ export async function enrich(db: Db, limit: number = RULES.enrich.maxPerRun): Pr
     while (next < batches.length) {
       const batch = batches[next++];
       try {
-        await enrichBatch(db, batch, totals);
+        await enrichBatch(db, batch, totals, scope);
       } catch (error) {
         // 묶음 안의 자료 하나 때문에 전체가 실패할 수 있으므로, 여러 건이면 한 건씩 나눠 다시 시도한다
         if (batch.length > 1) {
@@ -222,6 +228,6 @@ export async function enrich(db: Db, limit: number = RULES.enrich.maxPerRun): Pr
 }
 
 /** 아직 요약이 없는 실제 자료 수 */
-export function countPending(db: Db): Promise<number> {
-  return db.$count(articles, and(isNull(articles.summaryKo), eq(articles.mode, "live")));
+export function countPending(db: Db, scope: RunScope = LIVE): Promise<number> {
+  return db.$count(articles, and(isNull(articles.summaryKo), inScope(articles, scope)));
 }
