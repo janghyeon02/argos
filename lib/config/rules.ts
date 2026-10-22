@@ -155,6 +155,22 @@ export const RULES = {
   /** AI 호출 (DESIGN 10장) */
   ai: {
     maxRetries: 3,
+    /** 비용 계산용 gpt-4o-mini 가격 (달러, 100만 토큰당) */
+    pricePerMillionTokens: { input: 0.15, output: 0.6 },
+  },
+
+  /** 2단계 요약·판정 (PRD Must① 규칙 1·3, DESIGN 7.1 2단계) */
+  enrich: {
+    /** AI 한 번에 묶어 보내는 자료 수 — 같은 지시문을 나눠 써서 비용을 줄인다 */
+    batchSize: 10,
+    /** 동시에 보내는 요청 수 */
+    concurrency: 5,
+    /** 한 번 실행에서 처리하는 최대 자료 수 (매시간 실행 시간을 지키기 위해) */
+    maxPerRun: 600,
+    /** 정정·철회 대상을 찾을 때 거슬러 올라가는 기간 */
+    correctionLookbackDays: 7,
+    /** 정정·철회 대상 후보로 AI에 보여 주는 최대 자료 수 */
+    correctionCandidates: 15,
   },
 
   /** 평가 기준표 주간 보완 (PRD Must① 규칙 8, DESIGN 7.6) */
