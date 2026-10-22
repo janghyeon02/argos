@@ -38,6 +38,13 @@ async function main(): Promise<void> {
     console.log(`   데이터베이스: ${row.database}`);
     console.log(`   버전: ${version}`);
     console.log(`   응답 시간: ${elapsed}ms`);
+
+    // 만들어진 표 목록 (DESIGN 8장 — npm run db:migrate 후 14개)
+    const tables = await sql`
+      SELECT table_name FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+      ORDER BY table_name`;
+    console.log(`   표: ${tables.length}개${tables.length ? ` (${tables.map((t) => t.table_name).join(", ")})` : " — npm run db:migrate로 만드세요"}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.log("❌ Neon Postgres 연결 실패");
