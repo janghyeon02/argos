@@ -32,6 +32,8 @@ export const RULES = {
     staleWarningHours: 2,
     /** 원문 전문 대신 저장하는 짧은 발췌의 최대 글자 수 (PRD 7번) */
     excerptMaxChars: 300,
+    /** 이보다 오래된 글은 수집·묶기에서 뺀다 — 조기경보에는 최근 글만 의미가 있다 (과거 검증은 별도 자료 묶음 사용) */
+    maxArticleAgeDays: 14,
     /** 출처 하나를 기다리는 최대 시간 */
     fetchTimeoutMs: 15000,
     /** 수집기임을 밝히는 이름 — 브라우저인 척하지 않는다 */
@@ -43,10 +45,22 @@ export const RULES = {
     summaryMaxSentences: 3,
     /** 이 확신도 미만이면 새 이슈 카드를 만든다 */
     sameIssueMinConfidence: 0.7,
+    /** 기존 이슈에 연결할 때 글 뜻의 유사도가 이보다 낮으면 AI 판단을 받아들이지 않는다 (실제 연결 사례로 정한 값) */
+    minLinkSimilarity: 0.3,
     /** 새 자료 없이 이 기간이 지난 '관심' 이슈는 보관 */
     archiveAfterIdleDays: 14,
     /** 묶기 비교 대상에 넣을 보관 이슈의 기간 (DESIGN 7.1) */
     reopenArchivedWithinDays: 90,
+    /** AI 한 번에 묶어 보내는 자료 수 — 같은 묶음 안의 자료끼리도 한 이슈로 묶을 수 있다 */
+    clusterBatchSize: 10,
+    /** AI에 보여 주는 기존 이슈 후보 수 (최근에 자료가 들어온 순) */
+    maxCandidateIssues: 200,
+    /** 한 번 실행에서 묶는 최대 자료 수 */
+    clusterMaxPerRun: 3000,
+    /** 동시에 보내는 묶기 요청 수 — 동시에 같은 새 이슈가 두 번 생길 수 있어 끝에 중복 합치기를 한다 */
+    clusterConcurrency: 5,
+    /** 이번 실행에서 생긴 이슈와 뜻이 이만큼 비슷한 이슈는 같은 이슈로 합친다 */
+    mergeMinSimilarity: 0.7,
   },
 
   /** 점수 평가 (PRD 3-2, Must① 규칙 4, DESIGN 6장) */

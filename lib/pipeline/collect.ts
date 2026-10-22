@@ -192,7 +192,12 @@ export async function collect({ db, asOf, dryRun = false, now = new Date() }: Co
       }
 
       try {
-        const items = (await fetchSource(source, now)).filter((item) => !asOf || item.publishedAt <= asOf);
+        // 기준 시각(없으면 지금)에서 정해진 기간보다 오래된 글은 넣지 않는다
+        const reference = asOf ?? now;
+        const oldest = reference.getTime() - RULES.collection.maxArticleAgeDays * 86_400_000;
+        const items = (await fetchSource(source, now)).filter(
+          (item) => item.publishedAt <= reference && item.publishedAt.getTime() >= oldest,
+        );
         let inserted = 0;
         if (!dryRun && items.length > 0) {
           const rows = await db

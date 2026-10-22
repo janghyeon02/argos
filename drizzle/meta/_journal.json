@@ -15,6 +15,13 @@
       "when": 1792649210319,
       "tag": "0001_small_klaw",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792652071220,
+      "tag": "0002_superb_argent",
+      "breakpoints": true
     }
   ]
 }

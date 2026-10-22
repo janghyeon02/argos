@@ -14,7 +14,8 @@
     "check:ai": "tsx --env-file-if-exists=.env scripts/check-ai.ts",
     "check:sources": "tsx scripts/check-sources.ts",
     "collect": "tsx --env-file-if-exists=.env scripts/collect.ts",
-    "enrich": "tsx --env-file-if-exists=.env scripts/enrich.ts"
+    "enrich": "tsx --env-file-if-exists=.env scripts/enrich.ts",
+    "cluster": "tsx --env-file-if-exists=.env scripts/cluster.ts"
   },
   "dependencies": {
     "cheerio": "^1.2.0",

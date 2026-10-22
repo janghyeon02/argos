@@ -118,3 +118,27 @@ export async function askJson<S extends z.ZodType>(options: AskJsonOptions<S>): 
 
   throw new AiTaskError(`형식에 맞는 답을 받지 못했습니다 — ${lastProblem}`, lastReason, maxAttempts);
 }
+
+/** 글 뜻 비교용 모델 — 이슈 묶기에서 AI 판단이 엉뚱하지 않은지 확인하는 데 쓴다 (비용이 아주 적다) */
+export const EMBEDDING_MODEL = "text-embedding-3-small";
+
+/** 글마다 뜻을 나타내는 숫자 목록(임베딩)을 돌려준다. 순서는 입력과 같다. */
+export async function embed(texts: string[]): Promise<{ vectors: number[][]; tokens: number }> {
+  if (texts.length === 0) return { vectors: [], tokens: 0 };
+  const response = await getClient().embeddings.create({ model: EMBEDDING_MODEL, input: texts });
+  const vectors = [...response.data].sort((a, b) => a.index - b.index).map((item) => item.embedding);
+  return { vectors, tokens: response.usage.total_tokens };
+}
+
+/** 두 글의 뜻이 얼마나 가까운지 (-1~1, 클수록 비슷함) */
+export function similarity(a: number[], b: number[]): number {
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return dot / Math.sqrt(normA * normB);
+}

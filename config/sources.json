@@ -378,9 +378,10 @@
       "language": "en",
       "region": "인도",
       "urls": [
-        "https://economictimes.indiatimes.com/rssfeedsdefault.cms"
+        "https://economictimes.indiatimes.com/news/economy/rssfeeds/1373380680.cms",
+        "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"
       ],
-      "access": "공식 RSS, robots.txt 허용"
+      "access": "공식 RSS (경제·시장), robots.txt 허용. 기본 피드는 2008년 글까지 섞여 있어 섹션 피드로 바꿈"
     },
     {
       "id": "aljazeera",

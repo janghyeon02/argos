@@ -97,6 +97,10 @@ export const articles = pgTable(
     fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
     /** 이슈 카드에 반영된 시각 — "공개 후 3시간 이내 반영" 측정용 */
     linkedAt: timestamp("linked_at", { withTimezone: true }),
+    /** 이슈 묶기 단계에서 판정한 시각 (관련 없는 자료도 다시 판정하지 않도록 남긴다) */
+    clusteredAt: timestamp("clustered_at", { withTimezone: true }),
+    /** 경제·금융·지정학 리스크와 관련 있는 자료인지 — 관련 없는 자료(지역 사건·스포츠·문화 등)는 이슈로 묶지 않는다 */
+    isRelevant: boolean("is_relevant"),
     /** 원문 전문은 저장하지 않는다 (PRD 7번) */
     excerpt: text("excerpt"),
     summaryKo: text("summary_ko"),
