@@ -2,11 +2,11 @@
 // Design Ref: §5 — 출처마다 응답 코드, RSS 여부, 글 수를 보여준다. 수집은 하지 않는다.
 // 실행: npm run check:sources
 
+import { RULES } from "../lib/config/rules";
 import { SOURCES } from "../lib/config/sources";
 
-// 수집기임을 밝히는 이름 (몰래 브라우저인 척하지 않는다)
-const USER_AGENT = "ArgosRiskMonitor/0.1 (personal research; contact via repository owner)";
-const TIMEOUT_MS = 15000;
+const USER_AGENT = RULES.collection.userAgent;
+const TIMEOUT_MS = RULES.collection.fetchTimeoutMs;
 
 type UrlCheck = { url: string; ok: boolean; note: string };
 

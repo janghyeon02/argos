@@ -17,6 +17,8 @@ const SourceSchema = z.object({
   urls: z.array(z.url()).min(1),
   /** 접근 방식과 확인 결과 메모 */
   access: z.string(),
+  /** 이 시간 안에는 다시 읽지 않는다 (페이지 읽기 출처에 부담을 주지 않기 위해) */
+  minIntervalHours: z.number().positive().optional(),
 });
 
 const SourcesFileSchema = z

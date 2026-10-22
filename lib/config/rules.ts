@@ -30,6 +30,12 @@ export const RULES = {
     reflectWithinHours: 3,
     /** 실행이 이만큼 멈추면 화면에 빨간 경고 (DESIGN 4.2) */
     staleWarningHours: 2,
+    /** 원문 전문 대신 저장하는 짧은 발췌의 최대 글자 수 (PRD 7번) */
+    excerptMaxChars: 300,
+    /** 출처 하나를 기다리는 최대 시간 */
+    fetchTimeoutMs: 15000,
+    /** 수집기임을 밝히는 이름 — 브라우저인 척하지 않는다 */
+    userAgent: "ArgosRiskMonitor/0.1 (personal research; contact via repository owner)",
   },
 
   /** 요약·묶기 (PRD Must① 규칙 2·3·6) */

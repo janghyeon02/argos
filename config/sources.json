@@ -110,7 +110,8 @@
       "urls": [
         "https://www.kdi.re.kr/research/reportList"
       ],
-      "access": "RSS 주소가 글 목록이 아닌 설정 파일만 돌려줘서 연구보고서 목록 페이지 읽기. robots.txt 전체 허용 (국제금융센터 대체: robots.txt가 검색엔진 외 수집을 막음)"
+      "access": "RSS 주소가 글 목록이 아닌 설정 파일만 돌려줘서 연구보고서 목록 페이지 읽기. robots.txt 전체 허용 (국제금융센터 대체: robots.txt가 검색엔진 외 수집을 막음)",
+      "minIntervalHours": 6
     },
     {
       "id": "kiep",
@@ -121,7 +122,8 @@
       "urls": [
         "https://www.kiep.go.kr/gallery.es?mid=a10101010000&bid=0001"
       ],
-      "access": "RSS 없음, 발간물 목록 페이지 읽기. robots.txt는 일반 수집기를 막지 않지만 AI 학습용 봇은 막으므로 제목·링크·짧은 발췌만 쓰고 하루 몇 번 이하로 읽는다"
+      "access": "RSS 없음, 발간물 목록 페이지 읽기. robots.txt는 일반 수집기를 막지 않지만 AI 학습용 봇은 막으므로 제목·링크·짧은 발췌만 쓰고 하루 몇 번 이하로 읽는다",
+      "minIntervalHours": 6
     },
     {
       "id": "bbc",
