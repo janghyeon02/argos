@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check:env": "node scripts/check-env.mts"
+    "check:env": "node scripts/check-env.mts",
+    "check:db": "node --env-file-if-exists=.env scripts/check-db.mts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
     "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0"
