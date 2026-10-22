@@ -1,6 +1,7 @@
 // 아르고스 데이터베이스 표 정의 (Drizzle ORM).
 // Design Ref: §8 데이터 모델 — 표와 칸은 DESIGN.md 8장 표와 같게 유지한다.
 // 실제(live)와 과거 검증(backtest) 데이터는 mode 칸으로 구분하고, 검증 데이터는 backtest_run_id로 실행별로 묶는다.
+// 모든 표에 행 단위 보안(RLS)을 켠다 — Supabase의 공개 데이터 API(anon 키)로는 읽거나 쓸 수 없고, 서버의 직접 접속만 허용된다.
 
 import {
   type AnyPgColumn,
@@ -62,7 +63,7 @@ export const runs = pgTable("runs", {
   /** 과거 검증: 기준 시각과 사용한 기준표 버전 */
   asOf: timestamp("as_of", { withTimezone: true }),
   rubricVersion: integer("rubric_version"),
-});
+}).enableRLS();
 
 // ── 출처 ──────────────────────────────────────────────────────
 export const sources = pgTable(
@@ -80,7 +81,7 @@ export const sources = pgTable(
     createdAt: createdAt(),
   },
   (t) => [check("sources_tier_check", sql`${t.tier} between 1 and 3`)],
-);
+).enableRLS();
 
 // ── 수집한 자료 ────────────────────────────────────────────────
 export const articles = pgTable(
@@ -113,7 +114,7 @@ export const articles = pgTable(
     unique("articles_url_unique").on(t.url, t.mode, t.backtestRunId).nullsNotDistinct(),
     index("articles_published_idx").on(t.mode, t.publishedAt),
   ],
-);
+).enableRLS();
 
 // ── 이슈 카드 ──────────────────────────────────────────────────
 export const issues = pgTable(
@@ -136,7 +137,7 @@ export const issues = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("issues_list_idx").on(t.mode, t.status, t.grade, t.score)],
-);
+).enableRLS();
 
 // ── 이슈와 자료 연결 (자료 1건은 이슈 1개에만) ─────────────────────
 export const issueArticles = pgTable(
@@ -153,7 +154,7 @@ export const issueArticles = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.issueId, t.articleId] }), unique("issue_articles_article_unique").on(t.articleId)],
-);
+).enableRLS();
 
 // ── 평가 기준표 버전 ───────────────────────────────────────────
 export const rubricVersions = pgTable("rubric_versions", {
@@ -164,7 +165,7 @@ export const rubricVersions = pgTable("rubric_versions", {
   /** 재검증 결과 요약 */
   rerunResult: jsonb("rerun_result"),
   createdAt: createdAt(),
-});
+}).enableRLS();
 
 // ── 점수 이력 ──────────────────────────────────────────────────
 /** 6개 경로별 점수: 5번 평가 각각과 중앙값 */
@@ -199,7 +200,7 @@ export const scores = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("scores_issue_idx").on(t.issueId, t.createdAt)],
-);
+).enableRLS();
 
 // ── 시나리오 버전 ──────────────────────────────────────────────
 export type ScenarioBody = {
@@ -226,7 +227,7 @@ export const scenarios = pgTable(
     createdAt: createdAt(),
   },
   (t) => [unique("scenarios_issue_version_unique").on(t.issueId, t.version)],
-);
+).enableRLS();
 
 // ── 갈림길 신호 (id가 고정 번호) ─────────────────────────────────
 export const scenarioSignals = pgTable(
@@ -245,7 +246,7 @@ export const scenarioSignals = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("scenario_signals_issue_idx").on(t.issueId)],
-);
+).enableRLS();
 
 // ── 알림 기록 ──────────────────────────────────────────────────
 export const alerts = pgTable(
@@ -264,7 +265,7 @@ export const alerts = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("alerts_issue_idx").on(t.issueId, t.decidedAt), index("alerts_status_idx").on(t.status)],
-);
+).enableRLS();
 
 // ── 사용자 피드백 ──────────────────────────────────────────────
 export const feedback = pgTable("feedback", {
@@ -275,7 +276,7 @@ export const feedback = pgTable("feedback", {
   userGrade: gradeEnum("user_grade").notNull(),
   memo: text("memo"),
   createdAt: createdAt(),
-});
+}).enableRLS();
 
 // ── 사례 기록 ──────────────────────────────────────────────────
 export const caseNotes = pgTable("case_notes", {
@@ -288,7 +289,7 @@ export const caseNotes = pgTable("case_notes", {
   mode: modeEnum("mode").notNull().default("live"),
   backtestRunId: ref("backtest_run_id").references(() => runs.id),
   createdAt: createdAt(),
-});
+}).enableRLS();
 
 // ── 과거 검증 결과 ─────────────────────────────────────────────
 export const backtestResults = pgTable("backtest_results", {
@@ -307,7 +308,7 @@ export const backtestResults = pgTable("backtest_results", {
   /** 국가·기관 이름을 가린 비교 실험인지 */
   masked: boolean("masked").notNull().default(false),
   createdAt: createdAt(),
-});
+}).enableRLS();
 
 // ── 로그인 시도 제한 ───────────────────────────────────────────
 export const loginAttempts = pgTable("login_attempts", {
@@ -315,4 +316,4 @@ export const loginAttempts = pgTable("login_attempts", {
   failedCount: smallint("failed_count").notNull().default(0),
   lockedUntil: timestamp("locked_until", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}).enableRLS();

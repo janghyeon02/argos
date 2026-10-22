@@ -32,7 +32,7 @@
 | B. 깔끔한 분리 | 화면 앱과 처리 작업을 별도 프로젝트로 나눠 각각 배포 | 역할이 완전히 분리됨 | 프로젝트·배포가 두 개라 입문자에게 관리 부담이 큼 |
 | **C. 실용적 균형 (선택)** | 한 저장소 안에서 공용 코드(`lib/`)를 두고, 화면은 Next.js가, 처리 작업은 GitHub Actions가 같은 코드를 불러 실행 | 시간 제한 걱정 없음, 실행 주소를 외부에 열 필요 없음, 프로젝트는 하나 | 폴더 규칙을 지켜야 함 |
 
-**선택: C안.** PRD 8번 구성(Next.js + Vercel + GitHub Actions + Neon)과 그대로 맞고, 처리 작업이 외부 주소 없이 GitHub Actions 안에서만 돌아서 보안도 단순해진다.
+**선택: C안.** PRD 8번 구성(Next.js + Vercel + GitHub Actions + Supabase)과 그대로 맞고, 처리 작업이 외부 주소 없이 GitHub Actions 안에서만 돌아서 보안도 단순해진다.
 
 ### 2.2 전체 구조
 
@@ -43,7 +43,7 @@
           ├─ 출처 사이트 (RSS·공식 페이지)
           ├─ OpenAI API (요약·점수·시나리오)
           ├─ 텔레그램 (알림 발송)
-          └─ Neon Postgres (모든 결과 저장)
+          └─ Supabase Postgres (모든 결과 저장)
                     ▲
                     │ 읽기 / 피드백 쓰기 (실제 데이터만)
 [Vercel — Next.js 웹 화면]
@@ -59,7 +59,7 @@
 | 화면 + 서버 코드 | Next.js 16 (App Router, TypeScript, Tailwind CSS) |
 | 배포 | Vercel |
 | 정기 실행 | GitHub Actions (매시 7분 + 주 1회) |
-| 데이터 저장 | Neon Postgres |
+| 데이터 저장 | Supabase Postgres (서울 지역, Transaction pooler로 접속, 모든 표에 RLS를 켜 공개 데이터 API로는 접근 불가) |
 | AI 분석 | OpenAI API — 요약·묶기·점수·시나리오·기준표 보완 모두 `gpt-4o-mini` (비용을 줄이기 위한 결정, 용도별 모델은 `lib/ai/llm.ts`에서 바꿀 수 있음) |
 | 알림 | 텔레그램 봇 API (별도 도구 없이 직접 요청) |
 
@@ -67,7 +67,7 @@
 
 | 기술 | 쉬운 설명 (1줄) |
 |---|---|
-| `@neondatabase/serverless` | Neon 데이터베이스에 접속하게 해 주는 공식 연결 도구예요. |
+| `postgres` | Supabase(Postgres) 데이터베이스에 접속하게 해 주는 연결 도구예요. |
 | Drizzle ORM | 데이터베이스의 표를 코드로 정의하고, 표 구조를 바꿀 때 기록을 남겨 주는 도구예요. |
 | `openai` | OpenAI API를 안전하게 부르게 해 주는 공식 도구예요. |
 | Zod | AI 답변이 정해진 모양(점수는 0~100, 확률 합 100 등)인지 자동으로 검사해 주는 도구예요. |
@@ -76,7 +76,7 @@
 | `tsx` | GitHub Actions에서 TypeScript로 쓴 처리 스크립트를 바로 실행하게 해 주는 도구예요. |
 | Vitest | 점수 계산·알림 규칙이 PRD대로 동작하는지 자동으로 확인하는 시험 도구예요. |
 
-모두 무료이며, 화면 쪽에는 Neon 연결·Drizzle·Zod만 들어가고 나머지는 GitHub Actions 처리 작업에서만 쓴다.
+모두 무료이며, 화면 쪽에는 데이터베이스 연결·Drizzle·Zod만 들어가고 나머지는 GitHub Actions 처리 작업에서만 쓴다.
 
 ## 4. 화면 구성
 
@@ -270,7 +270,7 @@
 
 | 입력 | 처리 | 출력 |
 |---|---|---|
-| 사용자가 화면을 엶 | `proxy.ts`가 로그인 쿠키 확인 → 서버에서 쿠키 서명 재확인 → Neon에서 실제 데이터만 조회 | 이슈 목록·상세·보관·검증 결과 화면 |
+| 사용자가 화면을 엶 | `proxy.ts`가 로그인 쿠키 확인 → 서버에서 쿠키 서명 재확인 → Supabase에서 실제 데이터만 조회 | 이슈 목록·상세·보관·검증 결과 화면 |
 | 비밀번호 입력 | 서버 액션이 시도 횟수 확인 → 비밀번호 비교 → 서명된 쿠키 발급 | 첫 화면으로 이동 |
 | 피드백 보내기 | 서버 액션이 쿠키 서명 재확인 → 형식 검사 → 저장 | `feedback`, `case_notes` |
 

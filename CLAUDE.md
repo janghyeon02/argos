@@ -13,7 +13,7 @@
 ## 기술 스택
 
 - Next.js 16 (App Router) + React 19 + TypeScript(strict) + Tailwind CSS v4
-- 배포: Vercel / 정기 실행: GitHub Actions(1시간마다) / 저장: Neon Postgres / AI 분석: OpenAI API(`gpt-4o-mini`) / 알림: 텔레그램 봇 API
+- 배포: Vercel / 정기 실행: GitHub Actions(1시간마다) / 저장: Supabase(Postgres) / AI 분석: OpenAI API(`gpt-4o-mini`) / 알림: 텔레그램 봇 API
 - 기술 스택은 PRD에 정한 대로 Next.js로 고정한다. 다른 프레임워크로 바꾸거나 마이그레이션을 제안하지 않는다.
 - 배포는 Vercel을 사용한다.
 - PRD 8번에 없는 라이브러리나 서비스를 새로 넣기 전에는 사용자에게 먼저 묻는다.

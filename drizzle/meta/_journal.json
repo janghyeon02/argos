@@ -8,6 +8,13 @@
       "when": 1792644604261,
       "tag": "0000_real_timeslip",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792649210319,
+      "tag": "0001_small_klaw",
+      "breakpoints": true
     }
   ]
 }

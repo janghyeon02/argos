@@ -4,7 +4,7 @@
 //       npm run collect -- --as-of=2026-10-20T09:00:00+09:00   (그 시각까지 공개된 글만)
 
 import { eq } from "drizzle-orm";
-import { getDb } from "../lib/db/client";
+import { closeDb, getDb } from "../lib/db/client";
 import { runs } from "../lib/db/schema";
 import { SOURCES } from "../lib/config/sources";
 import { collect } from "../lib/pipeline/collect";
@@ -63,6 +63,8 @@ async function main(): Promise<void> {
         .where(eq(runs.id, run.id));
     }
     process.exitCode = 1;
+  } finally {
+    await closeDb();
   }
 }
 

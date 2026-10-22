@@ -14,7 +14,7 @@ type RequiredKey = {
 // DESIGN.md 9장에 정한 필수 키 (AI는 사용자 결정으로 Claude 대신 OpenAI 사용)
 const REQUIRED_KEYS: RequiredKey[] = [
   { name: "OPENAI_API_KEY", description: "OpenAI API 키 (gpt-4o-mini)", usedIn: "GitHub Actions Secrets" },
-  { name: "DATABASE_URL", description: "Neon 데이터베이스 접속 주소", usedIn: "GitHub Actions Secrets, Vercel" },
+  { name: "DATABASE_URL", description: "Supabase 데이터베이스 접속 주소 (Transaction pooler)", usedIn: "GitHub Actions Secrets, Vercel" },
   { name: "TELEGRAM_BOT_TOKEN", description: "텔레그램 봇 토큰", usedIn: "GitHub Actions Secrets" },
   { name: "TELEGRAM_CHAT_ID", description: "알림을 받을 텔레그램 대화 ID", usedIn: "GitHub Actions Secrets" },
   { name: "SITE_URL", description: "알림 속 이슈 상세 링크용 사이트 주소", usedIn: "GitHub Actions Secrets" },

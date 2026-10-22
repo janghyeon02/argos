@@ -1,5 +1,5 @@
 // Drizzle 표 구조 변경(마이그레이션) 설정.
-// 실행: npm run db:generate (변경 기록 만들기) → npm run db:migrate (Neon에 적용)
+// 실행: npm run db:generate (변경 기록 만들기) → npm run db:migrate (Supabase에 적용)
 
 import { defineConfig } from "drizzle-kit";
 
